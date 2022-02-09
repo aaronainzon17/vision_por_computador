@@ -32,7 +32,6 @@
 *.app
 
 #CMAKE gitignore
-
 CMakeLists.txt.user
 CMakeCache.txt
 CMakeFiles
