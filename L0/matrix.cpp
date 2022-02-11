@@ -51,8 +51,6 @@ int main( int argc, char** argv ) {
     //Se espera a que terminemos el programa
     //Meter aqui lo de transformar matrices y comparar tiempos
     Mat img1 = img.clone(),img2=img.clone(),img3=img.clone();
-    //Use functions from OpenCV
-    
     //Traverse with pointers
     auto t = std::chrono::high_resolution_clock::now();
     colorReducePointers(img1);
@@ -65,7 +63,7 @@ int main( int argc, char** argv ) {
     std::cout <<"Tiempo de iterador: " << std::chrono::duration_cast<std::chrono::milliseconds>(d).count() << "ms"<<std::endl;
     //Traverse with index
     t = std::chrono::high_resolution_clock::now();
-    salt(img3,1000);
+    salt(img3,img.rows*img.cols);
     d = std::chrono::high_resolution_clock::now()-t; 
     std::cout <<"Tiempo de indexer: " << std::chrono::duration_cast<std::chrono::milliseconds>(d).count() << "ms"<<std::endl;
 
