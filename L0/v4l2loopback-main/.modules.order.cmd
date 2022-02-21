@@ -1,0 +1,1 @@
+cmd_/home/gabete/VisionPorComputador/Practicas/vision_por_computador/L0/v4l2loopback-main/modules.order := {   echo /home/gabete/VisionPorComputador/Practicas/vision_por_computador/L0/v4l2loopback-main/v4l2loopback.ko; :; } | awk '!x[$$0]++' - > /home/gabete/VisionPorComputador/Practicas/vision_por_computador/L0/v4l2loopback-main/modules.order

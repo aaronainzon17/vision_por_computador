@@ -1,0 +1,1 @@
+cmd_/home/gabete/VisionPorComputador/Practicas/vision_por_computador/L0/v4l2loopback-main/v4l2loopback.mod := { echo  /home/gabete/VisionPorComputador/Practicas/vision_por_computador/L0/v4l2loopback-main/v4l2loopback.o;  echo; } > /home/gabete/VisionPorComputador/Practicas/vision_por_computador/L0/v4l2loopback-main/v4l2loopback.mod
