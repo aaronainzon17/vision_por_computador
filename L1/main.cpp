@@ -117,6 +117,7 @@ int main(int, char**) {
         cout << "Aplicando efecto de POSTER" << endl;
     }else if (val == 4) {
         cout << "Aplicando efecto de DISTORSION" << endl;
+        //https://stackoverflow.com/questions/66895102/how-to-apply-distortion-on-an-image-using-opencv-or-any-other-library
     }
     
     
