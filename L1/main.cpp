@@ -63,8 +63,29 @@ Mat getSkin(Mat input){
 
     //filter the image in YCrCb color space
     inRange(skin,Scalar(Y_MIN,Cr_MIN,Cb_MIN),Scalar(Y_MAX,Cr_MAX,Cb_MAX),skin);
-
+    cout<<"skin es"<<skin<<endl;
     return skin;
+
+    // //Convertir imagen en hsv
+    // //Si un pixel es 255 lo pongo verde
+    // for (int i=0; i<input.rows; i++) {
+    //     uchar* data= input.ptr<uchar>(i); // pointer to row i
+    //     uchar* dataMask= skin.ptr<uchar>(i);
+    //     for (int j=0; j<input.cols*input.channels(); j++) {
+            
+    //         if(dataMask[j] == 255){
+    //             //data[j]
+    //         }
+    //     }
+    // }
+    Mat dst;
+    cvtColor(input,input,COLOR_BGR2YCrCb);
+    add(input, Scalar(100, 0, 0), dst, skin);
+    namedWindow("alien", WINDOW_NORMAL);
+    imshow("alien", dst);
+    waitKey(0);
+    
+
 }
 
 
