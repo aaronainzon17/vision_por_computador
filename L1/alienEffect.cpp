@@ -6,6 +6,7 @@ using namespace cv;
 
 Mat frame, mask;
 int slider_G, slider_R, slider_B;
+VideoCapture camera(0);
 
 Mat getSkin(Mat input){
     //Valores para detectar la piel
@@ -34,7 +35,7 @@ void on_trackbar(int, void*) {
 }
 
 int main(){
-    VideoCapture camera(0);
+    //VideoCapture camera(0);
     if (!camera.isOpened()) {
         cerr << "ERROR: Could not open camera" << endl;
         return 1;
