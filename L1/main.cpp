@@ -9,6 +9,7 @@ using namespace cv;
 Mat frame, mask;
 int slider_G, slider_R, slider_B;
 int a,b;
+int cambioColor;
 
 Mat equalize(Mat img, int a, int b){
     Mat img_aux = img.clone();
@@ -63,7 +64,16 @@ void on_trackbar_ALIEN(int, void*) {
    add(frame, Scalar(slider_B,slider_G,slider_R), frame, mask);
 }
 
-
+void reducing_Color(Mat &image, int div=64){ //Declaring the function//
+   int   total_rows = image.rows;//getting the number of lines//
+   int total_columns = image.cols * image.channels();//getting the number of columns per line//
+   for (int j = 0; j < total_rows; j++){ //initiating a for loop for rows
+      uchar* data = image.ptr<uchar>(j);
+      for (int i = 0; i < total_columns; i++){ //initiating a for loop for columns//
+         data[i] = data[i] / div * div + div / 2;//processing the pixels//
+      }
+   }  
+}
 
 int main(int, char**) {
     
@@ -136,6 +146,28 @@ int main(int, char**) {
    
     }else if (val == 3){
         cout << "Aplicando efecto de POSTER" << endl;
+        namedWindow("Poster", WINDOW_AUTOSIZE); // Create Window
+        cambioColor = 64;
+        createTrackbar("Escala","Poster",&cambioColor,256);
+        while(1) {
+            // capture the next frame from the webcam
+            camera >> frame;
+
+            //show the current image
+            imshow("Original Image",frame);
+            if(cambioColor == 0){
+                cambioColor +=1;
+            }
+            reducing_Color(frame,cambioColor);
+            
+            
+            imshow("Poster",frame);
+            if (waitKey(10) >= 0){
+                break;
+            }
+        }
+        cv::destroyAllWindows();
+
     }else if (val == 4) {
         cout << "Aplicando efecto de DISTORSION" << endl;
         //https://stackoverflow.com/questions/66895102/how-to-apply-distortion-on-an-image-using-opencv-or-any-other-library
