@@ -2,6 +2,7 @@
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
 #include "iostream"
+#include <math.h>
 
 using namespace std;
 using namespace cv;
@@ -10,6 +11,7 @@ Mat frame, mask;
 int slider_G, slider_R, slider_B;
 int a,b;
 int cambioColor;
+int barril,almohada;
 
 Mat equalize(Mat img, int a, int b){
     Mat img_aux = img.clone();
@@ -75,6 +77,84 @@ void reducing_Color(Mat &image, int div=64){ //Declaring the function//
    }  
 }
 
+Mat distorsionBarril(Mat src, double mul_k1){
+   
+    //Mat dst = Mat::zeros(src.rows,src.cols,CV_64FC1);
+    Mat dst(src.rows,src.cols,CV_8UC1,Scalar(1,3));
+    // and now turn M to a 100x60 15-channel 8-bit matrix.
+    // The old content will be deallocated
+    dst.create(src.rows,src.cols,CV_8UC(3));
+    int xcen = src.cols/2;
+    int ycen = src.rows/2;
+    int xd,yd;
+    int r2,r4;
+    int xu,yu;
+    //double K1 =1.0e-6;
+    double K1 = mul_k1 * pow(10,-6);
+    double K2 = 0;
+    //cout<<"Hola1"<<endl;
+    for (int i=0; i<src.rows; i++) {
+        for (int j=0; j<src.cols; j++) { //int j=0; j<src.cols*src.channels(); j++
+            xd = j;
+            yd = i;
+            r2 = (xd - xcen)*(xd - xcen) + (yd - ycen)*(yd - ycen);
+            r4 =r2*r2;
+            xu = xd + (xd - xcen )* K1 * r2 + (xd - xcen )* K2 * r4;
+            yu = yd + (yd - ycen )* K1 * r2 + (yd - ycen )* K2 * r4;
+            if(xu >= src.cols || yu >= src.rows){
+                dst.at<cv::Vec3b>(yd,xd)[0] = 0;
+                dst.at<cv::Vec3b>(yd,xd)[1] = 0;
+                dst.at<cv::Vec3b>(yd,xd)[2] = 0;
+            }else{
+                dst.at<cv::Vec3b>(yd,xd)[0] = src.at<cv::Vec3b>(yu,xu)[0];
+                dst.at<cv::Vec3b>(yd,xd)[1] = src.at<cv::Vec3b>(yu,xu)[1];
+                dst.at<cv::Vec3b>(yd,xd)[2] = src.at<cv::Vec3b>(yu,xu)[2];
+            }
+        }
+    }
+
+    return dst;
+}
+
+Mat distorsionAlmohada(Mat src,double  mul_k1){
+   
+    //Mat dst = Mat::zeros(src.rows,src.cols,CV_64FC1);
+    Mat dst(src.rows,src.cols,CV_8UC1,Scalar(1,3));
+    // and now turn M to a 100x60 15-channel 8-bit matrix.
+    // The old content will be deallocated
+    dst.create(src.rows,src.cols,CV_8UC(3));
+    int xcen = src.cols/2;
+    int ycen = src.rows/2;
+    int xd,yd;
+    int r2,r4;
+    int xu,yu;
+    //double K1 =1.0e-6;
+    double K1 = -mul_k1 * pow(10,-6);
+    double K2 = 0;
+    //cout<<"Hola1"<<endl;
+    for (int i=0; i<src.rows; i++) {
+        for (int j=0; j<src.cols; j++) { //int j=0; j<src.cols*src.channels(); j++
+            xd = j;
+            yd = i;
+            r2 = (xd - xcen)*(xd - xcen) + (yd - ycen)*(yd - ycen);
+            r4 =r2*r2;
+            xu = xd + (xd - xcen )* K1 * r2 + (xd - xcen )* K2 * r4;
+            yu = yd + (yd - ycen )* K1 * r2 + (yd - ycen )* K2 * r4;
+            if(xu >= src.cols || yu >= src.rows){
+                dst.at<cv::Vec3b>(yd,xd)[0] = 0;
+                dst.at<cv::Vec3b>(yd,xd)[1] = 0;
+                dst.at<cv::Vec3b>(yd,xd)[2] = 0;
+            }else{
+                dst.at<cv::Vec3b>(yd,xd)[0] = src.at<cv::Vec3b>(yu,xu)[0];
+                dst.at<cv::Vec3b>(yd,xd)[1] = src.at<cv::Vec3b>(yu,xu)[1];
+                dst.at<cv::Vec3b>(yd,xd)[2] = src.at<cv::Vec3b>(yu,xu)[2];
+            }
+        }
+    }
+
+    return dst;
+}
+
 int main(int, char**) {
     
     // open the first webcam plugged in the computer
@@ -101,6 +181,8 @@ int main(int, char**) {
         while(1) {
             // capture the next frame from the webcam
             camera >> frame;
+            //<<frame.rows<<endl;
+            //cout<<frame.cols<<endl;
             cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
             imshow("Original Image",frame);
             Mat imagenEcualizada = atomaticEqualize(frame);
@@ -171,6 +253,33 @@ int main(int, char**) {
     }else if (val == 4) {
         cout << "Aplicando efecto de DISTORSION" << endl;
         //https://stackoverflow.com/questions/66895102/how-to-apply-distortion-on-an-image-using-opencv-or-any-other-library
+
+        namedWindow("Efecto barril", 1);
+        namedWindow("Efecto almohada", 1);
+        barril =0;
+        almohada =0;
+        createTrackbar("Escala","Efecto barril",&barril,10);
+        createTrackbar("Escala","Efecto almohada",&almohada,10);
+        while(1) {
+            // capture the next frame from the webcam
+            camera >> frame;
+            //<<frame.rows<<endl;
+            //cout<<frame.cols<<endl;
+            
+            imshow("Original Image",frame);
+
+            //Mat imagenEcualizada = atomaticEqualize(frame);
+            //imshow("Imagen ecualizada",imagenEcualizada);
+            //Se muestra la que puedes variar parametros
+            Mat imagenBarril = distorsionBarril(frame,barril);
+            Mat imagenAlmohada = distorsionAlmohada(frame,almohada);
+            imshow("Efecto barril",imagenBarril);
+            imshow("Efecto almohada",imagenAlmohada);
+            if (waitKey(10) >= 0){
+                break;
+            }
+        }
+        cv::destroyAllWindows();
     }else if (val == 5){
         cout << "Dejando de usar la aplicacion" << endl;
         return 0;
