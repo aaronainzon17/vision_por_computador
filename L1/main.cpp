@@ -7,9 +7,9 @@
 using namespace std;
 using namespace cv;
 
-Mat frame, mask;
+Mat frame, mask, cartoon;
 int slider_G, slider_R, slider_B;
-int a,b;
+int a,b,sigmaX;
 int cambioColor;
 int barril,almohada;
 
@@ -155,6 +155,35 @@ Mat distorsionAlmohada(Mat src,double  mul_k1){
     return dst;
 }
 
+void cartoonize(){
+    //Convert to gray scale
+    Mat grayImage;
+    cvtColor(frame, grayImage, COLOR_BGR2GRAY);
+
+    //apply gaussian blur
+    GaussianBlur(grayImage, grayImage, Size(3, 3), (double)sigmaX/100);
+
+    //find edges
+    Mat edgeImage;
+    Laplacian(grayImage, edgeImage, -1, 5);
+    convertScaleAbs(edgeImage, edgeImage);
+    
+    //invert the image
+    edgeImage = 255 - edgeImage;
+
+    //apply thresholding
+    threshold(edgeImage, edgeImage, 150, 255, THRESH_BINARY);
+
+    //blur images heavily using edgePreservingFilter
+    Mat edgePreservingImage;
+    edgePreservingFilter(frame, edgePreservingImage, 2, 50, 0.4);
+    
+    cartoon = Scalar::all(0);
+
+    // Combine the cartoon and edges
+    cv::bitwise_and(edgePreservingImage, edgePreservingImage, cartoon, edgeImage);
+}
+
 int main(int, char**) {
     
     // open the first webcam plugged in the computer
@@ -164,126 +193,147 @@ int main(int, char**) {
         return 1;
     }
     while(1){
-    //Mat imgAColor = frame.clone();
-    //cvtColor( frame, frame, COLOR_BGR2GRAY );
-    cout << "Que efecto quieres aplicar ?" << endl;
-    cout << " 1: Contraste \n 2: Alien \n 3: Poster \n 4: Distorsion \n 5: terminar el uso de aplicación" << endl;
-    int val;
-    cin >> val;
+        //Mat imgAColor = frame.clone();
+        //cvtColor( frame, frame, COLOR_BGR2GRAY );
+        cout << "Que efecto quieres aplicar ?" << endl;
+        cout << " 1: Contraste \n 2: Alien \n 3: Poster \n 4: Distorsion \n 5: Dibujo \n 6: terminar el uso de aplicación" << endl;
+        int val;
+        cin >> val;
+        
+        if (val == 1){
+            cout << "Aplicando efecto de CONTRASTE" << endl;
+            namedWindow("Ecualizacion ajustada", 1);
+            a=1;
+            b=0;
+            createTrackbar("Contraste","Ecualizacion ajustada",&a,100);
+            createTrackbar("Brillo","Ecualizacion ajustada",&b,100);
+            while(1) {
+                // capture the next frame from the webcam
+                camera >> frame;
+                //<<frame.rows<<endl;
+                //cout<<frame.cols<<endl;
+                cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
+                imshow("Original Image",frame);
+                Mat imagenEcualizada = atomaticEqualize(frame);
+                imshow("Imagen ecualizada",imagenEcualizada);
+                //Se muestra la que puedes variar parametros
+                Mat imagenEcualizada_parametros = equalize(frame,a,b);
+                imshow("Ecualizacion ajustada",imagenEcualizada_parametros);
+                if (waitKey(10) >= 0){
+                    break;
+                }
+            }
+            cv::destroyAllWindows();
+        }else if (val == 2) {
+            cout << "Aplicando efecto de ALIEN" << endl;
+            namedWindow("Alien", WINDOW_AUTOSIZE); // Create Window
+        
+            slider_B = 0;
+            slider_G = 255;
+            slider_R = 0;
+
+            createTrackbar( "Blue", "Alien", &slider_B, 255, on_trackbar_ALIEN );
+            createTrackbar( "Green", "Alien", &slider_G, 255, on_trackbar_ALIEN );
+            createTrackbar( "Red", "Alien", &slider_R, 255, on_trackbar_ALIEN );
+
+            while(1) {
+                // capture the next frame from the webcam
+                camera >> frame;
+
+                //show the current image
+                imshow("Original Image",frame);
+
+                mask = getSkin(frame);
+                //frame.setTo(Scalar(0,255,0), mask);
+                //add(frame, Scalar(0,255,0), frame, mask);
+                on_trackbar_ALIEN(1,0);
+                imshow("Alien",frame);
+                if (waitKey(10) >= 0){
+                    break;
+                }
+            }
+            cv::destroyAllWindows();
+            //return 0;
     
-    if (val == 1){
-        cout << "Aplicando efecto de CONTRASTE" << endl;
-        namedWindow("Ecualizacion ajustada", 1);
-        a=1;
-        b=0;
-        createTrackbar("Contraste","Ecualizacion ajustada",&a,100);
-        createTrackbar("Brillo","Ecualizacion ajustada",&b,100);
-        while(1) {
-            // capture the next frame from the webcam
-            camera >> frame;
-            //<<frame.rows<<endl;
-            //cout<<frame.cols<<endl;
-            cv::cvtColor(frame, frame, cv::COLOR_BGR2GRAY);
-            imshow("Original Image",frame);
-            Mat imagenEcualizada = atomaticEqualize(frame);
-            imshow("Imagen ecualizada",imagenEcualizada);
-            //Se muestra la que puedes variar parametros
-            Mat imagenEcualizada_parametros = equalize(frame,a,b);
-            imshow("Ecualizacion ajustada",imagenEcualizada_parametros);
-            if (waitKey(10) >= 0){
-                break;
+        }else if (val == 3){
+            cout << "Aplicando efecto de POSTER" << endl;
+            namedWindow("Poster", WINDOW_AUTOSIZE); // Create Window
+            cambioColor = 64;
+            createTrackbar("Escala","Poster",&cambioColor,256);
+            while(1) {
+                // capture the next frame from the webcam
+                camera >> frame;
+
+                //show the current image
+                imshow("Original Image",frame);
+                if(cambioColor == 0){
+                    cambioColor +=1;
+                }
+                reducing_Color(frame,cambioColor);
+                
+                
+                imshow("Poster",frame);
+                if (waitKey(10) >= 0){
+                    break;
+                }
             }
-        }
-        cv::destroyAllWindows();
-    }else if (val == 2) {
-        cout << "Aplicando efecto de ALIEN" << endl;
-        namedWindow("Alien", WINDOW_AUTOSIZE); // Create Window
-    
-        slider_B = 0;
-        slider_G = 255;
-        slider_R = 0;
+            cv::destroyAllWindows();
 
-        createTrackbar( "Blue", "Alien", &slider_B, 255, on_trackbar_ALIEN );
-        createTrackbar( "Green", "Alien", &slider_G, 255, on_trackbar_ALIEN );
-        createTrackbar( "Red", "Alien", &slider_R, 255, on_trackbar_ALIEN );
+        }else if (val == 4) {
+            cout << "Aplicando efecto de DISTORSION" << endl;
+            //https://stackoverflow.com/questions/66895102/how-to-apply-distortion-on-an-image-using-opencv-or-any-other-library
 
-        while(1) {
-            // capture the next frame from the webcam
-            camera >> frame;
+            namedWindow("Efecto barril", 1);
+            namedWindow("Efecto almohada", 1);
+            barril =0;
+            almohada =0;
+            createTrackbar("Escala","Efecto barril",&barril,10);
+            createTrackbar("Escala","Efecto almohada",&almohada,10);
+            while(1) {
+                // capture the next frame from the webcam
+                camera >> frame;
+                //<<frame.rows<<endl;
+                //cout<<frame.cols<<endl;
+                
+                imshow("Original Image",frame);
 
-            //show the current image
-            imshow("Original Image",frame);
-
-            mask = getSkin(frame);
-            //frame.setTo(Scalar(0,255,0), mask);
-            //add(frame, Scalar(0,255,0), frame, mask);
-            on_trackbar_ALIEN(1,0);
-            imshow("Alien",frame);
-            if (waitKey(10) >= 0){
-                break;
+                //Mat imagenEcualizada = atomaticEqualize(frame);
+                //imshow("Imagen ecualizada",imagenEcualizada);
+                //Se muestra la que puedes variar parametros
+                Mat imagenBarril = distorsionBarril(frame,barril);
+                Mat imagenAlmohada = distorsionAlmohada(frame,almohada);
+                imshow("Efecto barril",imagenBarril);
+                imshow("Efecto almohada",imagenAlmohada);
+                if (waitKey(10) >= 0){
+                    break;
+                }
             }
-        }
-        cv::destroyAllWindows();
-        //return 0;
-   
-    }else if (val == 3){
-        cout << "Aplicando efecto de POSTER" << endl;
-        namedWindow("Poster", WINDOW_AUTOSIZE); // Create Window
-        cambioColor = 64;
-        createTrackbar("Escala","Poster",&cambioColor,256);
-        while(1) {
-            // capture the next frame from the webcam
-            camera >> frame;
+            cv::destroyAllWindows();
+        }else if (val == 5){
+            cout << "Aplicando efecto de CARTOON" << endl;
+            namedWindow("Cartoon", WINDOW_AUTOSIZE); // Create Window
+            createTrackbar( "Blur Effect", "Cartoon", &sigmaX, 100);
 
-            //show the current image
-            imshow("Original Image",frame);
-            if(cambioColor == 0){
-                cambioColor +=1;
+            while(1) {
+                // capture the next frame from the webcam
+                camera >> frame;
+
+                //show the current image
+                imshow("Original Image",frame);
+
+                cartoonize();
+
+                imshow("Cartoon",cartoon);
+                if (waitKey(10) >= 0){
+                    break;
+                }
             }
-            reducing_Color(frame,cambioColor);
             
-            
-            imshow("Poster",frame);
-            if (waitKey(10) >= 0){
-                break;
-            }
+            destroyAllWindows();
+        }else if (val == 6){
+            cout << "Dejando de usar la aplicacion" << endl;
+            return 0;
         }
-        cv::destroyAllWindows();
-
-    }else if (val == 4) {
-        cout << "Aplicando efecto de DISTORSION" << endl;
-        //https://stackoverflow.com/questions/66895102/how-to-apply-distortion-on-an-image-using-opencv-or-any-other-library
-
-        namedWindow("Efecto barril", 1);
-        namedWindow("Efecto almohada", 1);
-        barril =0;
-        almohada =0;
-        createTrackbar("Escala","Efecto barril",&barril,10);
-        createTrackbar("Escala","Efecto almohada",&almohada,10);
-        while(1) {
-            // capture the next frame from the webcam
-            camera >> frame;
-            //<<frame.rows<<endl;
-            //cout<<frame.cols<<endl;
-            
-            imshow("Original Image",frame);
-
-            //Mat imagenEcualizada = atomaticEqualize(frame);
-            //imshow("Imagen ecualizada",imagenEcualizada);
-            //Se muestra la que puedes variar parametros
-            Mat imagenBarril = distorsionBarril(frame,barril);
-            Mat imagenAlmohada = distorsionAlmohada(frame,almohada);
-            imshow("Efecto barril",imagenBarril);
-            imshow("Efecto almohada",imagenAlmohada);
-            if (waitKey(10) >= 0){
-                break;
-            }
-        }
-        cv::destroyAllWindows();
-    }else if (val == 5){
-        cout << "Dejando de usar la aplicacion" << endl;
-        return 0;
-    }
     }
     
    
