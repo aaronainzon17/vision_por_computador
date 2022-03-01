@@ -80,10 +80,14 @@ void reducing_Color(Mat &image, int div=64){ //Declaring the function//
 Mat distorsionBarril(Mat src, double mul_k1){
    
     //Mat dst = Mat::zeros(src.rows,src.cols,CV_64FC1);
-    Mat dst(src.rows,src.cols,CV_8UC1,Scalar(1,3));
+    Mat dst(src.rows,src.cols,CV_8UC1,Scalar(0,3));
     // and now turn M to a 100x60 15-channel 8-bit matrix.
     // The old content will be deallocated
     dst.create(src.rows,src.cols,CV_8UC(3));
+
+    // Mat X = Mat::zeros(src.rows,src.cols,CV_32FC1);
+    // Mat Y = Mat::zeros(src.rows,src.cols,CV_32FC1);
+
     int xcen = src.cols/2;
     int ycen = src.rows/2;
     int xd,yd;
@@ -93,6 +97,9 @@ Mat distorsionBarril(Mat src, double mul_k1){
     double K1 = mul_k1 * pow(10,-6);
     double K2 = 0;
     //cout<<"Hola1"<<endl;
+    // cv::Mat test(cv::Size(1, 49), CV_64FC1);
+    // test = 0;
+
     for (int i=0; i<src.rows; i++) {
         for (int j=0; j<src.cols; j++) { //int j=0; j<src.cols*src.channels(); j++
             xd = j;
@@ -101,6 +108,7 @@ Mat distorsionBarril(Mat src, double mul_k1){
             r4 =r2*r2;
             xu = xd + (xd - xcen )* K1 * r2 + (xd - xcen )* K2 * r4;
             yu = yd + (yd - ycen )* K1 * r2 + (yd - ycen )* K2 * r4;
+            
             if(xu >= src.cols || yu >= src.rows){
                 dst.at<cv::Vec3b>(yd,xd)[0] = 0;
                 dst.at<cv::Vec3b>(yd,xd)[1] = 0;
@@ -110,8 +118,14 @@ Mat distorsionBarril(Mat src, double mul_k1){
                 dst.at<cv::Vec3b>(yd,xd)[1] = src.at<cv::Vec3b>(yu,xu)[1];
                 dst.at<cv::Vec3b>(yd,xd)[2] = src.at<cv::Vec3b>(yu,xu)[2];
             }
+            // X.at<int>(i,j) = xu;
+            // Y.at<int>(i,j) = yu;
         }
     }
+    //remap(src,dst,X,Y,INTER_NEAREST);
+
+    //remap(src,dst,xd,yd,INTER_NEAREST)
+    //Usar la funcion remap que me ha dicho facorro
 
     return dst;
 }
