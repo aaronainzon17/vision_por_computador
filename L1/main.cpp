@@ -42,12 +42,12 @@ Mat atomaticEqualize(Mat img){
 */
 Mat getSkin(Mat input){
     //Valores para detectar la piel
-    int Y_MIN = 0;
+    int Y_MIN = 80; //0
     int Y_MAX = 255;
-    int Cr_MIN = 133;
-    int Cr_MAX = 173;
-    int Cb_MIN = 77;
-    int Cb_MAX = 127;
+    int Cr_MIN = 135; //133
+    int Cr_MAX = 173; //180
+    int Cb_MIN = 80; //77
+    int Cb_MAX = 135; //127
 
     Mat skin;
     //first convert our RGB image to YCrCb
@@ -77,49 +77,45 @@ void reducing_Color(Mat &image, int div=64){ //Declaring the function//
    }  
 }
 
-Mat distorsionBarril(Mat src, double mul_k1){
+Mat distorsionBarril(Mat src){
    
     //Mat dst = Mat::zeros(src.rows,src.cols,CV_64FC1);
-    Mat dst(src.rows,src.cols,CV_8UC1,Scalar(0,3));
+    Mat dst;
+    
     // and now turn M to a 100x60 15-channel 8-bit matrix.
     // The old content will be deallocated
     dst.create(src.rows,src.cols,CV_8UC(3));
-
+    dst = Scalar::all(0);
+    
     // Mat X = Mat::zeros(src.rows,src.cols,CV_32FC1);
     // Mat Y = Mat::zeros(src.rows,src.cols,CV_32FC1);
-
-    int xcen = src.cols/2;
-    int ycen = src.rows/2;
-    int xd,yd;
+    // Variables para el cambio de coordenadas
+    double xcen = src.cols/2;
+    double ycen = src.rows/2;
+    
+    
+    //int xd,yd;
     int r2,r4;
     int xu,yu;
     //double K1 =1.0e-6;
-    double K1 = mul_k1 * pow(10,-6);
+    double K1 = barril * pow(10,-6);
     double K2 = 0;
-    //cout<<"Hola1"<<endl;
+    
     // cv::Mat test(cv::Size(1, 49), CV_64FC1);
     // test = 0;
-
-    for (int i=0; i<src.rows; i++) {
-        for (int j=0; j<src.cols; j++) { //int j=0; j<src.cols*src.channels(); j++
-            xd = j;
-            yd = i;
-            r2 = (xd - xcen)*(xd - xcen) + (yd - ycen)*(yd - ycen);
-            r4 =r2*r2;
-            xu = xd + (xd - xcen )* K1 * r2 + (xd - xcen )* K2 * r4;
-            yu = yd + (yd - ycen )* K1 * r2 + (yd - ycen )* K2 * r4;
+    
+    for (int x = 0; x < src.cols; x++) {
+        for (int y = 0; y < src.rows; y++) { //int j=0; j<src.cols*src.channels(); j++
+            r2 = pow((x - xcen),2) + pow((y - ycen),2);
+            r4 = pow(r2,2);
+            xu = x + (x - xcen)* K1 * r2 + (x - xcen)* K2 * r4;
+            yu = y + (y - ycen)* K1 * r2 + (y - ycen)* K2 * r4;
             
-            if(xu >= src.cols || yu >= src.rows){
-                dst.at<cv::Vec3b>(yd,xd)[0] = 0;
-                dst.at<cv::Vec3b>(yd,xd)[1] = 0;
-                dst.at<cv::Vec3b>(yd,xd)[2] = 0;
-            }else{
-                dst.at<cv::Vec3b>(yd,xd)[0] = src.at<cv::Vec3b>(yu,xu)[0];
-                dst.at<cv::Vec3b>(yd,xd)[1] = src.at<cv::Vec3b>(yu,xu)[1];
-                dst.at<cv::Vec3b>(yd,xd)[2] = src.at<cv::Vec3b>(yu,xu)[2];
+            if(xu < src.cols && yu < src.rows && xu > 0 && yu > 0){
+                dst.at<Vec3b>(y,x)[0] = src.at<Vec3b>(yu,xu)[0];
+                dst.at<Vec3b>(y,x)[1] = src.at<Vec3b>(yu,xu)[1];
+                dst.at<Vec3b>(y,x)[2] = src.at<Vec3b>(yu,xu)[2];
             }
-            // X.at<int>(i,j) = xu;
-            // Y.at<int>(i,j) = yu;
         }
     }
     //remap(src,dst,X,Y,INTER_NEAREST);
@@ -130,7 +126,7 @@ Mat distorsionBarril(Mat src, double mul_k1){
     return dst;
 }
 
-Mat distorsionAlmohada(Mat src,double  mul_k1){
+Mat distorsionAlmohada(Mat src){
    
     //Mat dst = Mat::zeros(src.rows,src.cols,CV_64FC1);
     Mat dst(src.rows,src.cols,CV_8UC1,Scalar(1,3));
@@ -143,7 +139,7 @@ Mat distorsionAlmohada(Mat src,double  mul_k1){
     int r2,r4;
     int xu,yu;
     //double K1 =1.0e-6;
-    double K1 = -mul_k1 * pow(10,-6);
+    double K1 = -almohada * pow(10,-6);
     double K2 = 0;
     //cout<<"Hola1"<<endl;
     for (int i=0; i<src.rows; i++) {
@@ -297,12 +293,12 @@ int main(int, char**) {
             cout << "Aplicando efecto de DISTORSION" << endl;
             //https://stackoverflow.com/questions/66895102/how-to-apply-distortion-on-an-image-using-opencv-or-any-other-library
 
-            namedWindow("Efecto barril", 1);
-            namedWindow("Efecto almohada", 1);
-            barril =0;
-            almohada =0;
+            namedWindow("Efecto barril", WINDOW_AUTOSIZE);
+            namedWindow("Efecto almohada", WINDOW_AUTOSIZE);
+            
             createTrackbar("Escala","Efecto barril",&barril,10);
             createTrackbar("Escala","Efecto almohada",&almohada,10);
+
             while(1) {
                 // capture the next frame from the webcam
                 camera >> frame;
@@ -314,15 +310,15 @@ int main(int, char**) {
                 //Mat imagenEcualizada = atomaticEqualize(frame);
                 //imshow("Imagen ecualizada",imagenEcualizada);
                 //Se muestra la que puedes variar parametros
-                Mat imagenBarril = distorsionBarril(frame,barril);
-                Mat imagenAlmohada = distorsionAlmohada(frame,almohada);
+                Mat imagenBarril = distorsionBarril(frame);
+                Mat imagenAlmohada = distorsionAlmohada(frame);
                 imshow("Efecto barril",imagenBarril);
                 imshow("Efecto almohada",imagenAlmohada);
                 if (waitKey(10) >= 0){
                     break;
                 }
             }
-            cv::destroyAllWindows();
+            destroyAllWindows();
         }else if (val == 5){
             cout << "Aplicando efecto de CARTOON" << endl;
             namedWindow("Cartoon", WINDOW_AUTOSIZE); // Create Window
