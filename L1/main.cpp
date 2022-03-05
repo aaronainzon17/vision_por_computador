@@ -14,22 +14,27 @@ int a,b,sigmaX;
 int cambioColor;
 int barril,almohada;
 
+/*
+* equalize: Funcion que ecualiza la imagen
+    a = contraste
+    b = brillo
+*/
 Mat equalize(Mat img, int a, int b){
     
     Mat img_aux = img.clone();
-    
+    //Se transforman los valores de intensidad de la imagen con los valores suministrados por el usuario
     img_aux = a*img + b;
-
     // Create a window
     return img_aux;
 }
 
-
+/*
+* atomaticEcualize: ecualiza la imagen con los mejores valores de brillo y contraste
+*/
 Mat atomaticEqualize(Mat img){
     Mat img2;
-    
+    //Se llama a la funcion de openCV que ecualiza el histograma acumulado con las mejores a y b
     equalizeHist(img, img2);
-
     return img2;
 }
 
@@ -65,17 +70,27 @@ void on_trackbar_ALIEN(int, void*) {
    add(frame, Scalar(slider_B,slider_G,slider_R), frame, mask);
 }
 
-void reducing_Color(Mat &image, int div=64){ //Declaring the function//
-   int   total_rows = image.rows;//getting the number of lines//
-   int total_columns = image.cols * image.channels();//getting the number of columns per line//
-   for (int j = 0; j < total_rows; j++){ //initiating a for loop for rows
+/*
+    reducing_color reduce los colores de la imagen
+*/
+void reducing_Color(Mat &image, int div=64){ 
+   int   total_rows = image.rows;
+   int total_columns = image.cols * image.channels();
+   for (int j = 0; j < total_rows; j++){
       uchar* data = image.ptr<uchar>(j);
-      for (int i = 0; i < total_columns; i++){ //initiating a for loop for columns//
-         data[i] = data[i] / div * div + div / 2;//processing the pixels//
+      for (int i = 0; i < total_columns; i++){ 
+          //Para cada pixel se divide entre un valor (entre 1 y 255) y se multiplica por el
+          //Al ser enteros colores similares acabaran con el mismo valor
+          //Se vuelve a multiplicar por div tras dividirlo para recuperar el valor original (verde oscuro y verde claro acabaran con el mismo color)
+          //sino un color acabaría en otra gama de colores
+         data[i] = data[i] / div * div + div / 2;
       }
    }  
 }
 
+/*
+    distorsionBarril distorsiona la imagen con el efecto de barril
+*/
 Mat distorsionBarril(Mat src){
    
     //Se declara la matriz destino
@@ -92,14 +107,17 @@ Mat distorsionBarril(Mat src){
     int r2,r4;
     int xu,yu;
 
+    //Se define el factor de distorsion
     double K1 = barril * pow(10,-6);
     double K2 = 0;
     
     //Se itera por filas y columnas
     for (int x = 0; x < src.cols; x++) {
         for (int y = 0; y < src.rows; y++) {
+            //Se obtiene la distancia al cuadrado al cuadrado del píxel a distorsionar al centro
             r2 = pow((x - xcen),2) + pow((y - ycen),2);
             r4 = pow(r2,2);
+            //Se el pixel correspondiente de la imagen original
             xu = x + (x - xcen)* K1 * r2 + (x - xcen)* K2 * r4;
             yu = y + (y - ycen)* K1 * r2 + (y - ycen)* K2 * r4;
             
@@ -116,12 +134,13 @@ Mat distorsionBarril(Mat src){
     return dst;
 }
 
+/*
+    distorsionBarril distorsiona la imagen con el efecto de almohada
+*/
 Mat distorsionAlmohada(Mat src){
    
     //Mat dst = Mat::zeros(src.rows,src.cols,CV_64FC1);
     Mat dst(src.rows,src.cols,CV_8UC1,Scalar(1,3));
-    // and now turn M to a 100x60 15-channel 8-bit matrix.
-    // The old content will be deallocated
     dst.create(src.rows,src.cols,CV_8UC(3));
     int xcen = src.cols/2;
     int ycen = src.rows/2;
@@ -129,6 +148,7 @@ Mat distorsionAlmohada(Mat src){
     int r2,r4;
     int xu,yu;
     //double K1 =1.0e-6;
+    //Se define el factor de distorsion
     double K1 = -almohada * pow(10,-6);
     double K2 = 0;
     //cout<<"Hola1"<<endl;
