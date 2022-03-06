@@ -348,20 +348,4 @@ int main(int, char**) {
             return 0;
         }
     }
-    
-   
 }
-
-/*
-//Alien es cargar los canales, cambias 2 y solo dejas uno
-Algo de piel: detectar la piel, buscar los rangos maximos de los sitios que tienen color que se asocia con piel. Elegir los pixeles con color piel
-Sustituir solo los pixeles que cumplen una propiedad
-Tenemos 3 canales, cojes el rojo, teniamos del 0 a 255 y entre esos dices pues quiero 8 categorias y  trasladas cada uno a esa propiedad
-Tengo un dato, si cae entre valor o el otro pues lo meto en tal conjunto, facil
-Esto para cada canal
-8 categorias para cada canal (pueen ser mas)
-Distorion: la idea es que tenemos un conjunto de pixeles y en vez de desdistorsionarlos pues le añadimos distorsion, esto con una formula de las transparencias
-sacas el radio o algo asi. Con monica vimos lo de aplicar de forma inversa o normal, aqui vemos que info del pixel vamos a plasmar en la nueva imagen
-Que valor se le pone a k1, k2? pues escribir la formula y ver con las unidades con las que estamos trabajando
-Si esta posicion en la imagen anterior estaba desplazada, si ese r² va a ser300² entonces k1 tiene que ser muy pqueña
-*/
