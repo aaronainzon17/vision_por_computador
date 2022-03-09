@@ -8,7 +8,7 @@
 using namespace std;
 using namespace cv;
 
-
+/*Implementacion de la matriz del kernel a mano y tras eso utilizar el la func filter2D para aplicar el gradiente*/
 
 int main(int, char**) {
     // Reading image
@@ -23,7 +23,7 @@ int main(int, char**) {
     // Blur the image for better edge detection
     Mat img_blur;
     GaussianBlur(img_gray, img_blur, Size(3,3), 0);
-    Mat sobelx, sobely, absDsty,absDstx;
+    Mat sobelx, sobely,sobelxMostrar,sobelyMostrar;
     // Sobel(img_blur, sobelx, CV_64F, 1, 0, 5);
     // Sobel(img_blur, sobely, CV_64F, 0, 1, 5);
 
@@ -36,36 +36,55 @@ In our last example, output datatype is cv.CV_8U. But there is a slight problem 
 If you want to detect both edges, better option is to keep the output datatype to some higher forms, like cv.CV_16S, cv.CV_64F etc, take its absolute value and then convert back to cv.CV_8U. Below code demonstrates this procedure for a horizontal Sobel filter and difference in results.
     */
 
-    Sobel(img, sobelx, CV_8U, 1, 0, 3, 1, 0, BORDER_DEFAULT);
-    Sobel(img, absDstx, CV_64F, 1, 0, 3, 1, 0, BORDER_DEFAULT);
-    Sobel(img, sobely, CV_8U, 0, 1, 3, 1, 0, BORDER_DEFAULT);
-    Sobel(img, absDsty, CV_64F, 0, 1, 3, 1, 0, BORDER_DEFAULT);
-    convertScaleAbs(absDstx, absDstx, 1, 0);
-    convertScaleAbs(absDsty, absDsty, 1, 0);
+//Explicación del uso de sobel
+/*
+8UC1 va de 0,255
+64F va de -255,255
+La cosa de hacer sobel es que hay que escalar para que no se te vayan los valores fuera de -255,255
+Luego para mostrar solo puedes mostrar de 0,255 por tanto hay que pasarla a 8UC1 (primero /2 +128este convertTo es solo para mostrar)
+
+Para implementar sobel hay que escalarlo porque sino se te va de valores (o algo así ha dicho rosario)
+*/
+
+    //Para implementar sobel solo hay que aplicar la mascara y escalar
+    //Sobel(img, sobelx, CV_64F, 1, 0, 3, 1, 0, BORDER_DEFAULT);
+    //Sobel(img, sobely, CV_64F, 0, 1, 3, 1, 0, BORDER_DEFAULT);
     
-    //Sacar algo de cartToPolar 
+    Mat horizontalK = (Mat_<float>(3,3)<<1.,2.,1.,0.,0.,0.,-1.,-2.,-1.); // horizontal kernel
+    Mat verticalK = (Mat_<float>(3,3)<<-1.,0.,1.,-2.,0.,2.,-1.,0.,1.); // vertical kernel
+    
+    Mat sobelX,sobelY,sobelXaux,sobelYaux;
 
+    filter2D(img_blur,sobelX,CV_64F,verticalK);
+    filter2D(img_blur,sobelY,CV_64F,horizontalK);
 
-    imshow("Abs x", absDstx);
+    //Esto es solo para mostrarlo, los calculos de los gradientes se hacen con los valores originales
+    sobelXaux = sobelX/2 + 128;
+    sobelXaux.convertTo(sobelXaux,CV_8UC1);
+    imshow("Gradiente en X", sobelXaux);
+
     waitKey(0);
-    // imshow("Sobel y", sobelx);
-    // waitKey(0);
-    imshow("Abs y", absDsty);
+
+    sobelYaux = sobelY/2 + 128;
+    sobelYaux.convertTo(sobelYaux,CV_8UC1);
+    imshow("Gradiente en Y", sobelYaux);
+    
     waitKey(0);
-    // imshow("Sobel XY using Sobel() function", sobelxy);
-    // waitKey(0);
 
-
-    // // Canny edge detection
-    // Mat edges;
-    // Canny(img_blur, edges, 100, 200, 3, false);
-    // // Display canny edge detected image
-    // imshow("Canny edge detection", edges);
-    // waitKey(0);
+    
 
     //Ahora toca el módulo, simplemente se saca el módulo para la componente x e y y que se obtiene de las matrices obtenida anteriormente
-    
-    
+    Mat modulo;
+    modulo.create(img.rows,img.cols,CV_64F);
+    cvtColor(modulo, modulo, COLOR_BGR2GRAY);
+    modulo = Scalar::all(0);
+    for (int x = 0; x < img.cols; x++) {
+        for (int y = 0; y < img.rows; y++) {
+            modulo.at<Vec3b>(y,x) = sqrt(pow(sobelx.at<Vec3b>(y,x),2) + pow(sobely.at<Vec3b>(y,x),2));
+        }
+    }
+    imshow("modulo", modulo);
+    waitKey(0);
     
     destroyAllWindows();
  
