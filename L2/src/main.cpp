@@ -44,7 +44,8 @@ If you want to detect both edges, better option is to keep the output datatype t
     convertScaleAbs(absDsty, absDsty, 1, 0);
     
     //Sacar algo de cartToPolar 
-    
+
+
     imshow("Abs x", absDstx);
     waitKey(0);
     // imshow("Sobel y", sobelx);
