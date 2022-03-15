@@ -107,17 +107,24 @@ Mat hough(Mat img, Mat angle, Mat magnitude){
                 float p = x * cos(th) + y * sin(th); // rho = distancia al punto de origen 
 
                 float distance_90 = th - (CV_PI/2);
-                float distance_270 = th - ((3*CV_PI)/2);
+                float distance_270 = th - ((3*CV_PI)/2); 
+                // float distance_90 = abs(th - (CV_PI/2));
+                // float distance_270 = abs(th - ((3*CV_PI)/2));
+                // float distance_180 = abs(th - (CV_PI));
+                // float distance = abs(th);
                 //if (dist > 0.07){
-                if ((distance_90 > 0.088) && (distance_270 > 0.088)){
+                //if ((distance_90 > 0.088) && (distance_270 > 0.088)){
+                if ((distance_90 > 0.088) && (distance_270 > 0.088)){   //&& (distance_180 > 0.088) && (distance > 0.088)
                     entran++;
                     //Vote Line 
-                    int x_fuga = p / cos(th);		// Se calcula la x sabiendo que y = 0 y conociendo rho(p)
+                    int x_fuga = (p - y*sin(th)) / cos(th);		// Se calcula la x sabiendo que y = 0 y conociendo rho(p)
+                    //int x_fuga = (p) / cos(th);
 
                     if (x_fuga < img.cols/2 && x_fuga >= -img.cols/2) {	// Se comprueba que corta en la imagen.
                         x_fuga += img.cols/2;		// Se pone el corte en el rango.
                         centro[x_fuga]++;	// Se actualiza el valor.
                     }
+                    
                 }
                 
             }
