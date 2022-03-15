@@ -57,24 +57,27 @@ Para implementar sobel hay que escalarlo porque sino se te va de valores (o algo
     imshow("Gradiente en Y", sobelYaux);
     
     waitKey(0);
-
-    Mat magnitude,angle;
+    
+    Mat magnitude, magnitude_aux,angle, angle_aux;
 
     cartToPolar(sobelX,sobelY, magnitude, angle);
-    magnitude.convertTo(magnitude,CV_8UC1);
+    //magnitude_aux = magnitude / 255;
+    magnitude.convertTo(magnitude, CV_8UC1);
     imshow("modulo", magnitude);
+    cout << magnitude << endl;
     waitKey(0);
-    angle = angle/3.14159 *128;
-    angle.convertTo(angle,CV_8UC1);
-    imshow("orientacion", angle);
+
+    angle_aux = ((angle/CV_PI) * 128);
+    angle_aux.convertTo(angle_aux, CV_8UC1);
+    imshow("orientacion", angle_aux);
     waitKey(0);
     
     //destroyAllWindows();
     float th;
     int x,y;
     //Apartado 2
-    
-	Mat pto_fuga = hough(img_gray, angle, magnitude);
+    //cout << angle << endl;
+	Mat pto_fuga = hough(img_blur, angle, magnitude);
 
     imshow("Punto de fuga", pto_fuga);
 	waitKey(0);			// Se pausa para ver los resultados.
@@ -83,42 +86,55 @@ Para implementar sobel hay que escalarlo porque sino se te va de valores (o algo
     
     return 0;
 }
+
 Mat hough(Mat img, Mat angle, Mat magnitude){
-    float threshold = 60;
+    float threshold = 1000;
+    cout << "La imagen tiene " << img.rows << " filas" << endl;
     int centro[img.cols];
     //Se inicializa el vector a 0
     for (int i = 0; i < img.cols; i++){
         centro[i] = 0;
     }
     //Se itera sobre la imagen
+    int entran = 0;
     for (int i = 0; i < img.rows; i++){
         for(int j = 0; j < img.cols; j++){
-            if (magnitude.at<float>(j,i) >= threshold){
+            if (magnitude.at<float>(i,j) >= threshold){
+                cout << "La celda " << i << "," << j << " tiene el valor " << magnitude.at<float>(i,j) << endl;
                 float x = j - img.cols/2;
                 float y = img.rows/2 - i;
                 float th = angle.at<float>(i,j);
                 float p = x * cos(th) + y * sin(th); // rho = distancia al punto de origen 
-                
-                //Vote Line 
-                int x_fuga = p / cos(th);		// Se calcula la x sabiendo que y = 0 y conociendo rho(p)
 
-                if (x_fuga < img.cols/2 && x_fuga >= -img.cols/2) {	// Se comprueba que corta en la imagen.
-                    x_fuga += img.cols/2;		// Se pone el corte en el rango.
-                    centro[x_fuga]++;	// Se actualiza el valor.
+                float distance_90 = th - (CV_PI/2);
+                float distance_270 = th - ((3*CV_PI)/2);
+                //if (dist > 0.07){
+                if ((distance_90 > 0.088) && (distance_270 > 0.088)){
+                    entran++;
+                    //Vote Line 
+                    int x_fuga = p / cos(th);		// Se calcula la x sabiendo que y = 0 y conociendo rho(p)
+
+                    if (x_fuga < img.cols/2 && x_fuga >= -img.cols/2) {	// Se comprueba que corta en la imagen.
+                        x_fuga += img.cols/2;		// Se pone el corte en el rango.
+                        centro[x_fuga]++;	// Se actualiza el valor.
+                    }
                 }
+                
             }
         }
     }
-
+    cout << "Han entrado al bucle " << entran << endl;
     int max_votos = 0;
     //Se saca el punto mas votado
 	for(int i = 0; i < img.cols; i++){
 		if(centro[i] > centro[max_votos]){
-			max_votos = i;
+			cout << "La celda " << i << " tiene " << centro[i] << " votos" << endl;
+            max_votos = i;
 		}
 	}
-
-    circle(img, Point(max_votos,img.rows/2), 3, CV_RGB(255,0,0), 3);
+    cout << "El punto de fuga se ha encontrado en las coordenadas:" << endl;
+    cout << max_votos << " " << img.rows/2 << endl;
+    circle(img, Point(max_votos,img.rows/2), 3, CV_RGB(255,0,0), 1);
 	
     return img;		// Se devuelve la matriz con el punto de fuga
 }
@@ -130,8 +146,8 @@ void findMax(Mat magnitude) {
     float max = 0;
     for (int i = 0; i < magnitude.rows; i++){
         for(int j = 0; j < magnitude.cols; j++){
-            if (magnitude.at<float>(j,i) >= max){
-                max = magnitude.at<float>(j,i);
+            if (magnitude.at<float>(i,j) >= max){
+                max = magnitude.at<float>(i,j);
             }
         }
     }
