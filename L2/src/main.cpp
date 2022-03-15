@@ -37,13 +37,13 @@ Luego para mostrar solo puedes mostrar de 0,255 por tanto hay que pasarla a 8UC1
 Para implementar sobel hay que escalarlo porque sino se te va de valores (o algo así ha dicho rosario)
 */
     
-    Mat horizontalK = (Mat_<float>(3,3)<<1.,2.,1.,0.,0.,0.,-1.,-2.,-1.); // horizontal kernel
-    Mat verticalK = (Mat_<float>(3,3)<<-1.,0.,1.,-2.,0.,2.,-1.,0.,1.); // vertical kernel
+    Mat kernelY = (Mat_<float>(3,3)<<1.,2.,1.,0.,0.,0.,-1.,-2.,-1.); //kernel para el eje y
+    Mat kernelX = (Mat_<float>(3,3)<<-1.,0.,1.,-2.,0.,2.,-1.,0.,1.); //kernel para el eje X
     
     Mat sobelX,sobelY,sobelXaux,sobelYaux;
 
-    filter2D(img_blur,sobelX,CV_64F,verticalK);
-    filter2D(img_blur,sobelY,CV_64F,horizontalK);
+    filter2D(img_blur,sobelX,CV_64F,kernelX);
+    filter2D(img_blur,sobelY,CV_64F,kernelY);
 
     //Esto es solo para mostrarlo, los calculos de los gradientes se hacen con los valores originales
     sobelXaux = sobelX/2 + 128;
