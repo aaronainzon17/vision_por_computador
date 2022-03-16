@@ -12,6 +12,8 @@ using namespace cv;
 
 Mat hough(Mat img, Mat angle, Mat magnitude);
 double normalizar_pi_pi(double th);
+void findMax(Mat magnitude);
+
 int main(int, char**) {
 
     // Reading image
@@ -41,11 +43,14 @@ Para implementar sobel hay que escalarlo porque sino se te va de valores (o algo
     Mat kernelX = (Mat_<double>(3,3)<<-1.,0.,1.,-2.,0.,2.,-1.,0.,1.); //kernel para el eje X
     
     Mat sobelX,sobelY,sobelXaux,sobelYaux;
-    //Normalizar el sobelX e Y 
+    
     filter2D(img_blur,sobelX,CV_64F,kernelX);
     filter2D(img_blur,sobelY,CV_64F,kernelY);
-    sobelX = sobelX/4.0;
-    sobelY = sobelY/4.0;
+    
+    //Normalizar el sobelX y sobelY dividiendo entre 4 
+    sobelX = sobelX*0.25;
+    sobelY = sobelY*0.25;
+
     //Esto es solo para mostrarlo, los calculos de los gradientes se hacen con los valores originales
     sobelXaux = sobelX/2 + 128;
     sobelXaux.convertTo(sobelXaux,CV_8UC1);
@@ -63,11 +68,9 @@ Para implementar sobel hay que escalarlo porque sino se te va de valores (o algo
 
     cartToPolar(sobelX,sobelY, magnitude, angle);
     //magnitude_aux = magnitude / 255;
-    magnitude.convertTo(magnitude, CV_8UC1);
-    imshow("modulo", magnitude);
-    cout << magnitude << endl;
-    //threshold(magnitude, magnitude_aux, 30, 255, THRESH_BINARY);
-    //imshow("modulo_th", magnitude_aux);
+    magnitude.convertTo(magnitude_aux, CV_8UC1);
+    imshow("modulo", magnitude_aux);
+
     waitKey(0);
 
     angle_aux = ((angle/CV_PI) * 128);
@@ -75,11 +78,7 @@ Para implementar sobel hay que escalarlo porque sino se te va de valores (o algo
     imshow("orientacion", angle_aux);
     waitKey(0);
     
-    //destroyAllWindows();
-    double th;
-    int x,y;
     //Apartado 2
-    //cout << angle << endl;
 	Mat pto_fuga = hough(img_blur, angle, magnitude);
 
     imshow("Punto de fuga", pto_fuga);
@@ -92,14 +91,13 @@ Para implementar sobel hay que escalarlo porque sino se te va de valores (o algo
 
 Mat hough(Mat img, Mat angle, Mat magnitude){
     double threshold = 30;
-    cout << "La imagen tiene " << img.rows << " filas" << endl;
+
     int centro[img.cols];
     //Se inicializa el vector a 0
     for (int i = 0; i < img.cols; i++){
         centro[i] = 0;
     }
     //Se itera sobre la imagen
-    int entran = 0;
     for (int i = 0; i < img.rows; i++){
         for(int j = 0; j < img.cols; j++){
             if (magnitude.at<double>(i,j) >= threshold){
@@ -109,20 +107,15 @@ Mat hough(Mat img, Mat angle, Mat magnitude){
                 double th = angle.at<double>(i,j);
                 double p = x * cos(th) + y * sin(th); // rho = distancia al punto de origen 
 
-                double distance_90 = abs(normalizar_pi_pi(th - (CV_PI/2)));
-                double distance_270 = abs(normalizar_pi_pi(th - ((3*CV_PI)/2))); 
-                // double distance_90 = abs(th - (CV_PI/2));
-                // double distance_270 = abs(th - ((3*CV_PI)/2));
-                double distance_180 = abs(normalizar_pi_pi(th - (CV_PI)));
-                double distance_360 = abs(normalizar_pi_pi(th - (2*CV_PI)));
-                double distance = abs(th);
-                //if (dist > 0.07){
-                //if ((distance_90 > 0.088) && (distance_270 > 0.088)){
-                if ((distance_90 > 0.088) && (distance_270 > 0.088) && (distance > 0.088) && (distance_180 > 0.088) && (distance_360 > 0.088)){   //&& (distance_180 > 0.088) && (distance > 0.088)
-                    entran++;
+                double d_90 = abs(normalizar_pi_pi(th - (CV_PI/2)));
+                double d_270 = abs(normalizar_pi_pi(th - ((3*CV_PI)/2))); 
+                double d_180 = abs(normalizar_pi_pi(th - (CV_PI)));
+                double d_360 = abs(normalizar_pi_pi(th - (2*CV_PI)));
+                double d = abs(th);
+                double max_angle = 5*CV_PI/180;
+                if ((d_90 > max_angle) && (d_270 > max_angle) && (d > max_angle) && (d_180 > max_angle) && (d_360 > max_angle)){
                     //Vote Line 
-                    int x_fuga = (p - y*sin(th)) / cos(th);		// Se calcula la x sabiendo que y = 0 y conociendo rho(p)
-                    //int x_fuga = (p) / cos(th);
+                    int x_fuga = (p) / cos(th); // Se calcula la x sabiendo que y = 0 y conociendo rho(p)
 
                     if ((x_fuga < img.cols/2) && (x_fuga >= -img.cols/2)) {	// Se comprueba que corta en la imagen.
                         x_fuga += img.cols/2;		// Se pone el corte en el rango.
@@ -132,7 +125,7 @@ Mat hough(Mat img, Mat angle, Mat magnitude){
             }
         }
     }
-    cout << "Han entrado al bucle " << entran << endl;
+
     int max_votos = 0;
     //Se saca el punto mas votado
 	for(int i = 0; i < img.cols; i++){
