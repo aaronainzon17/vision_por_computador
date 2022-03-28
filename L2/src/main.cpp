@@ -8,24 +8,31 @@
 using namespace std;
 using namespace cv;
 
-/*Implementacion de la matriz del kernel a mano y tras eso utilizar el la func filter2D para aplicar el gradiente*/
-
+//Aplica la transformada de hough 
 Mat hough(Mat img, Mat angle, Mat magnitude);
+
+//Normaliza un angulo entre -pi y pi
 double normalizar_pi_pi(double th);
+
+//Devuelve el valor maximo de la matriz pasada por parametro
 void findMax(Mat magnitude);
+
+//La funcion cruzPtoFuga dibuja una cruz en el lugar donde se ha calculado el punto de fuga 
+Mat cruzPtoFuga(Mat img, int x, int y);
 
 int main(int, char**) {
 
-    // Reading image
-    Mat img = imread("../../Contornos/pasillo2.pgm");
-    // Display original image
+    // Se lee la imagen 
+    Mat img = imread("../../Contornos/pasillo3.pgm");
+    
+    //Se muestra la imagen original 
     imshow("original Image", img);
     waitKey(0);
 
-    // Convert to graycsale
+    //Se transforma a escala de grises 
     Mat img_gray;
     cvtColor(img, img_gray, COLOR_BGR2GRAY);
-    // Blur the image for better edge detection
+    //Se difumina ligeramente la imagen para favorecer la deteccion de aristas
     Mat img_blur;
     GaussianBlur(img_gray, img_blur, Size(3,3), 0);
 
@@ -38,12 +45,13 @@ Luego para mostrar solo puedes mostrar de 0,255 por tanto hay que pasarla a 8UC1
 
 Para implementar sobel hay que escalarlo porque sino se te va de valores (o algo así ha dicho rosario)
 */
-    
+    //Definicion de los kernels para calcular el gradiente en X e Y
     Mat kernelY = (Mat_<double>(3,3)<<1.,2.,1.,0.,0.,0.,-1.,-2.,-1.); //kernel para el eje y
     Mat kernelX = (Mat_<double>(3,3)<<-1.,0.,1.,-2.,0.,2.,-1.,0.,1.); //kernel para el eje X
     
     Mat sobelX,sobelY,sobelXaux,sobelYaux;
     
+    //Aplicacion del gradiente en la imagen
     filter2D(img_blur,sobelX,CV_64F,kernelX);
     filter2D(img_blur,sobelY,CV_64F,kernelY);
     
@@ -52,12 +60,14 @@ Para implementar sobel hay que escalarlo porque sino se te va de valores (o algo
     sobelY = sobelY*0.25;
 
     //Esto es solo para mostrarlo, los calculos de los gradientes se hacen con los valores originales
+    //sobelXaux es la matriz auxiliar utilizada para mstrar por pantalla el gradiente
     sobelXaux = sobelX/2 + 128;
     sobelXaux.convertTo(sobelXaux,CV_8UC1);
     imshow("Gradiente en X", sobelXaux);
 
     waitKey(0);
 
+    //sobelYaux es la matriz auxiliar utilizada para mstrar por pantalla el gradiente
     sobelYaux = sobelY/2 + 128;
     sobelYaux.convertTo(sobelYaux,CV_8UC1);
     imshow("Gradiente en Y", sobelYaux);
@@ -66,19 +76,24 @@ Para implementar sobel hay que escalarlo porque sino se te va de valores (o algo
     
     Mat magnitude, magnitude_aux,angle, angle_aux;
 
+    //Con la funcion cartToPolar se calcula el modulo y el angulo
     cartToPolar(sobelX,sobelY, magnitude, angle);
-    //magnitude_aux = magnitude / 255;
+    
+    //Se convierte la matriz magnitude para poder mostarse 
     magnitude.convertTo(magnitude_aux, CV_8UC1);
     imshow("modulo", magnitude_aux);
-
     waitKey(0);
 
+    //angle_aux se utiliza para mostrar la matriz de angulo
     angle_aux = ((angle/CV_PI) * 128);
     angle_aux.convertTo(angle_aux, CV_8UC1);
     imshow("orientacion", angle_aux);
     waitKey(0);
     
     //Apartado 2
+
+    //La matriz pto_fuga contiene el resultado de aplicar la transformada de hough para 
+    // encontrar el punto de fuga de la imagen
 	Mat pto_fuga = hough(img_blur, angle, magnitude);
 
     imshow("Punto de fuga", pto_fuga);
@@ -89,37 +104,48 @@ Para implementar sobel hay que escalarlo porque sino se te va de valores (o algo
     return 0;
 }
 
+//Aplica la transformada de hough 
 Mat hough(Mat img, Mat angle, Mat magnitude){
+    //Se define el umbral
     double threshold = 30;
 
+    //vector que representa la fila central de la imagen donde se 
+    // encuentra el punto de fuga 
     int centro[img.cols];
+
     //Se inicializa el vector a 0
     for (int i = 0; i < img.cols; i++){
         centro[i] = 0;
     }
+
     //Se itera sobre la imagen
     for (int i = 0; i < img.rows; i++){
         for(int j = 0; j < img.cols; j++){
             if (magnitude.at<double>(i,j) >= threshold){
-                //cout << "La celda " << i << "," << j << " tiene el valor " << magnitude.at<double>(i,j) << endl;
+                //Se calcula la ubicacion de la linea 
                 double x = j - img.cols/2;
                 double y = img.rows/2 - i;
-                double th = angle.at<double>(i,j);
+                double th = normalizar_pi_pi(angle.at<double>(i,j));
                 double p = x * cos(th) + y * sin(th); // rho = distancia al punto de origen 
 
+                //Se definen las restricciones para evitar lineas paralelas y perpendiculares
                 double d_90 = abs(normalizar_pi_pi(th - (CV_PI/2)));
                 double d_270 = abs(normalizar_pi_pi(th - ((3*CV_PI)/2))); 
                 double d_180 = abs(normalizar_pi_pi(th - (CV_PI)));
                 double d_360 = abs(normalizar_pi_pi(th - (2*CV_PI)));
                 double d = abs(th);
+                //Se limita el angulo a +- 5deg
                 double max_angle = 5*CV_PI/180;
+
                 if ((d_90 > max_angle) && (d_270 > max_angle) && (d > max_angle) && (d_180 > max_angle) && (d_360 > max_angle)){
                     //Vote Line 
-                    int x_fuga = (p) / cos(th); // Se calcula la x sabiendo que y = 0 y conociendo rho(p)
 
-                    if ((x_fuga < img.cols/2) && (x_fuga >= -img.cols/2)) {	// Se comprueba que corta en la imagen.
-                        x_fuga += img.cols/2;		// Se pone el corte en el rango.
-                        centro[x_fuga]++;	// Se actualiza el valor.
+                    //Se calcula la x sabiendo que y = 0 y conociendo rho(p) y se desplaza img.cols/2 
+                    // para ubicar el eje de coordenadas en el centro de la imagen 
+                    int x_fuga = ((p) / cos(th)) + (img.cols/2); 
+
+                    if ((x_fuga >= 0) && (x_fuga < img.cols)) {	// Se comprueba que corta la imagen.
+                        centro[x_fuga]++;
                     }   
                 }
             }
@@ -127,20 +153,34 @@ Mat hough(Mat img, Mat angle, Mat magnitude){
     }
 
     int max_votos = 0;
-    //Se saca el punto mas votado
+    //Se comprueba el pto mas votado
 	for(int i = 0; i < img.cols; i++){
 		if(centro[i] > centro[max_votos]){
-			//cout << "La celda " << i << " tiene " << centro[i] << " votos" << endl;
             max_votos = i;
 		}
 	}
+
     cout << "El punto de fuga se ha encontrado en las coordenadas:" << endl;
     cout << max_votos << " " << img.rows/2 << endl;
-    circle(img, Point(max_votos,img.rows/2), 3, CV_RGB(255,0,0), 1);
+    
+    //Se dibuja la cruz sobre dicho punto
+    //circle(img, Point(max_votos,img.rows/2), 3, CV_RGB(255,0,0), 1);
 	
-    return img;		// Se devuelve la matriz con el punto de fuga
+    return cruzPtoFuga(img,max_votos,img.rows/2);	// Se devuelve la matriz con el punto de fuga
 }
 
+//La funcion cruzPtoFuga dibuja una cruz en el lugar donde se ha calculado el punto de fuga 
+Mat cruzPtoFuga(Mat img, int x, int y){
+	// Se dibuja la linea vertical.
+	line(img, Point(x, y-5), Point(x, y+5), CV_RGB(255,255,255),2);
+    //Se dibuja la linea horizontal
+	line(img, Point(x-5, y), Point(x+5, y), CV_RGB(255,255,255),2);
+
+    return img;
+}
+
+
+//Devuelve el valor maximo de la matriz pasada por parametro
 void findMax(Mat magnitude) {
     double mid = magnitude.rows / 2;
     cout << "La fila de la mitad es: " << mid << endl;
@@ -155,29 +195,14 @@ void findMax(Mat magnitude) {
     }
     cout << "El maximo valor de la imagen es: " << max << endl;
 }
+
+//Normaliza un angulo entre -pi y pi
 double normalizar_pi_pi(double th){
     while (th > CV_PI){
-        //cout << "Primer " << th<< endl;
             th = th - 2 * CV_PI;
-            //waitKey(0);
     }
     while (th < -CV_PI){
-        //cout << "Segundo " << th << endl;
         th = th + 2 * CV_PI;
-        //waitKey(0);
     }
-    //cout << "FIN" << endl;
     return th;
 }
-        
-/*
-votan dos puntos que podrian pertenecer al gradiente (que podrian pertener a un gradiente votan)
-1 opcion: votan puntos a lineas y lineas a puntos de fuga
-Para cada fila
-    para cada columna
-        tenemos x,y, su modulo, orientacion
-        elegir el threshold: pues el maximo partido por 10, o la media
-        si tenemos la x,y y th pues scas la p 
-*/
-
-//Dibujar el pto que esta votando y el valor al que vota (solo los que entrewn al th )
