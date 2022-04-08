@@ -1,5 +1,5 @@
-#ifndef APRENDER_HPP
-#define APRENDER_HPP
+#ifndef RECONOCER_HPP
+#define RECONOCER_HPP
 
 #include "opencv2/opencv.hpp"
 #include "opencv2/imgcodecs.hpp"
@@ -18,8 +18,7 @@ enum Objeto {TRIANGULO, RUEDA, CIRCULO, VAGON, RECTANGULO, };
 const double areaMin = 1000;    //Indicar en la memoria que este valor se usa para ignorar los blobs basura y que se ha sacado 
                                 //Viendo las areas de los descriptores
 
-void aprender(string nomfich, Moments& mu_x, Point2f& mc_x, double& area_x, double& diametro_x);
+void reconocer(string nomfich);
 
-void aprenderTodo();
 
-#endif /* IMAGEN_HPP_ */
+#endif /* RECONOCER_HPP_ */

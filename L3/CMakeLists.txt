@@ -8,5 +8,6 @@ add_library(descriptores descriptores.cpp descriptores.hpp)
 add_library(aprender aprender.cpp aprender.hpp)
 
 add_executable( main main.cpp )
+
 target_link_libraries( aprender ${OpenCV_LIBS} descriptores)
-target_link_libraries( main ${OpenCV_LIBS} aprender)
+target_link_libraries( main aprender)

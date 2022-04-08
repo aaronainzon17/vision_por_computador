@@ -44,9 +44,9 @@ Mat sacarBlobs(Mat otsu){
         }
     }
 
-    imshow("Bloooob", figure_bin);
-    //imshow("Bloooob", img_components); 
-    waitKey(0);
+    // imshow("Bloooob", figure_bin);
+    // //imshow("Bloooob", img_components); 
+    // waitKey(0);
     return figure_bin;
 }
 
@@ -73,8 +73,8 @@ void sacarDescriptores(vector<vector<Point>> contours, Mat figure_bin,RNG rng, v
         drawContours( drawing, contours, (int)i, color, 2 );
         circle( drawing, mc[i], 4, color, -1 );
     }
-    imshow( "Contours", drawing );
-    waitKey(0);
+    // imshow( "Contours", drawing );
+    // waitKey(0);
     // double areasContornos[contours.size()];
     // double diametroContornos[contours.size()];
     cout << "\t Info: Area and Contour Length \n";
