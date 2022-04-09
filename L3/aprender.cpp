@@ -123,7 +123,7 @@ void aprenderTodo(){
         varianzaInv1 = sacarVarianza(inv1,mediaInv1);
         varianzaInv2= sacarVarianza(inv2,mediaInv2);
         varianzaInv3= sacarVarianza(inv3,mediaInv3);
-        myfile<<mediaArea<<","<<varianzaArea<<","<<mediaDiametro<<","<<varianzaDiametro<< mediaInv1<<","<<varianzaInv2<<","<<mediaInv2<<","<<varianzaInv2<<","<<mediaInv3<<","<<varianzaInv3<<"\n";
+        myfile<<mediaArea<<","<<varianzaArea<<","<<mediaDiametro<<","<<varianzaDiametro<<","<< mediaInv1<<","<<varianzaInv1<<","<<mediaInv2<<","<<varianzaInv2<<","<<mediaInv3<<","<<varianzaInv3<<"\n";
         inv1.clear();
         inv2.clear();
         inv3.clear();
