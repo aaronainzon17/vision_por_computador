@@ -3,8 +3,8 @@
 Mat sacarOtsu(Mat img_blur){
     Mat otsu;
     threshold(img_blur,otsu,0,255, THRESH_BINARY_INV | THRESH_OTSU);
-    imshow("Otsu img", otsu);
-    waitKey(0);
+    // imshow("Otsu img", otsu);
+    // waitKey(0);
 
     return otsu;
 }
@@ -15,7 +15,7 @@ Mat sacarBlobs(Mat otsu){
     
     int nBloobs = connectedComponents(otsu, img_components);
 
-    cout << "Se han reconocido: " << nBloobs << endl;
+    //cout << "Se han reconocido: " << nBloobs << endl;
     
     //imshow("connected components", img_components);
     //waitKey(0);
@@ -29,8 +29,8 @@ Mat sacarBlobs(Mat otsu){
     
     //Nos quedamos con el contorno mas grande
     //El de mayor area y perimetro
-    cout << "filas " << img_components.rows << " columnas " << img_components.cols << endl; 
-    waitKey(0);
+    // cout << "filas " << img_components.rows << " columnas " << img_components.cols << endl; 
+    // waitKey(0);
 
     //Para mostrar los blobs. Habra que ajustar el tamanyo del blob
     for (int i = 0; i < img_components.rows; i++){
@@ -63,7 +63,7 @@ void sacarDescriptores(vector<vector<Point>> contours, Mat figure_bin,RNG rng, v
         //add 1e-5 to avoid division by zero
         mc[i] = Point2f( static_cast<float>(mu[i].m10 / (mu[i].m00 + 1e-5)),
                          static_cast<float>(mu[i].m01 / (mu[i].m00 + 1e-5)) );
-        cout << "mc[" << i << "]=" << mc[i] << endl;
+        // cout << "mc[" << i << "]=" << mc[i] << endl;
     }
 
     Mat drawing = Mat::zeros( figure_bin.size(), CV_8UC3 );
@@ -77,11 +77,11 @@ void sacarDescriptores(vector<vector<Point>> contours, Mat figure_bin,RNG rng, v
     // waitKey(0);
     // double areasContornos[contours.size()];
     // double diametroContornos[contours.size()];
-    cout << "\t Info: Area and Contour Length \n";
+    // cout << "\t Info: Area and Contour Length \n";
     for( size_t i = 0; i < contours.size(); i++ )
     {
-        cout << " * Contour[" << i << "] - Area (M_00) = " << std::fixed << std::setprecision(2) << mu[i].m00
-             << " - Area OpenCV: " << contourArea(contours[i]) << " - Length: " << arcLength( contours[i], true ) << endl;
+        // cout << " * Contour[" << i << "] - Area (M_00) = " << std::fixed << std::setprecision(2) << mu[i].m00
+        //      << " - Area OpenCV: " << contourArea(contours[i]) << " - Length: " << arcLength( contours[i], true ) << endl;
         areasContornos[i] = contourArea(contours[i]);
         diametroContornos[i] = arcLength( contours[i], true );
     }

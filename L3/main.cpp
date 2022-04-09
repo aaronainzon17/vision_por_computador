@@ -59,26 +59,24 @@ int main(int, char**) {
    //  //If area del contorno es menor que 1000 entonces se ignora
    //  //Si contourArea(contours[i]) < 1000 entonces se elimna
 
-   string f1 = "../imagenesL3/circulo1.pgm";
-   string f2 = "../imagenesL3/vagon1.pgm";
-   string f3 = "../imagenesL3/rueda1.pgm";
-   string f4 = "../imagenesL3/rectangulo1.pgm";
-   string f5 = "../imagenesL3/triangulo1.pgm";
+   // string f1 = "../imagenesL3/circulo1.pgm";
+   // string f2 = "../imagenesL3/vagon1.pgm";
+   // string f3 = "../imagenesL3/rueda1.pgm";
+   // string f4 = "../imagenesL3/rectangulo1.pgm";
+   // string f5 = "../imagenesL3/triangulo1.pgm";
 
-   Moments mu_x;
-   Point2f mc_x;
-   double area_x;
-   double diametro_x;
+   // Moments mu_x;
+   // Point2f mc_x;
+   // double area_x;
+   // double diametro_x;
 
-   aprender(f1,mu_x,mc_x,area_x,diametro_x);
+   // aprender(f1,mu_x,mc_x,area_x,diametro_x);
+   // aprender(f2,mu_x,mc_x,area_x,diametro_x);
+   // aprender(f3,mu_x,mc_x,area_x,diametro_x);
+   // aprender(f4,mu_x,mc_x,area_x,diametro_x);
+   // aprender(f5,mu_x,mc_x,area_x,diametro_x);
 
-   aprender(f2,mu_x,mc_x,area_x,diametro_x);
-
-   aprender(f3,mu_x,mc_x,area_x,diametro_x);
-
-   aprender(f4,mu_x,mc_x,area_x,diametro_x);
-
-   aprender(f5,mu_x,mc_x,area_x,diametro_x);
+   aprenderTodo();
     
     return 0;
 }
