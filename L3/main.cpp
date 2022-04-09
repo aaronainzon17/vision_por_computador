@@ -6,6 +6,7 @@
 #include <math.h>
 #include "descriptores.hpp"
 #include "aprender.hpp"
+#include "reconocer.hpp"
 
 using namespace std;
 using namespace cv;
@@ -77,8 +78,16 @@ int main(int, char**) {
    // aprender(f5,mu_x,mc_x,area_x,diametro_x);
 
    aprenderTodo();
-    
-    return 0;
+
+   vector<vector<float>> datosAprendidos;
+   leerDatosAprendizaje("objetos", datosAprendidos);
+   //for (int i = 0; i < 5; i++){
+   //   for(int j = 0; j < 10; j++){
+   //      cout << datosAprendidos[i][j] << ",";
+   //   }
+   //   cout << endl;
+   //}
+   //return 0;
 }
 
 

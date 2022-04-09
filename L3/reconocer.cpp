@@ -35,12 +35,42 @@ void reconocer(string nomfich){
     
     float mahalanobis;
     for(size_t i = 0; i < contours.size();i++){ // Se recorren los objetos de la imagen 
-        mahalamobis = 0;
+        mahalanobis = 0;
         if(areasContornos[i] >= 1000){  //Se descartan los blobs de tamaño menor que 1000 (indeseados)
+            //Leer el fichero de aprender
             //Se calcula la distancia de mahalanobis.
-            for(int i = 0; i < parametros.rows; i++) {
+            /*for(int i = 0; i < parametros.rows; i++) {
                 mahalanobis += (pow(parametros[i]-media[i],2))/varianza[i];
-            }
-    }
+            }*/
+        }
 
+    }
+}
+
+void leerDatosAprendizaje(string nomfich, vector<vector<float>> &datosAprendidos){
+    ifstream f;
+    string linea;
+    f.open(nomfich);
+    if(!f) {
+        cerr << "Error: file could not be opened" << endl;
+        exit(1);
+    }
+    
+    vector<float> dataAux;
+    while (!f.eof()){
+        getline(f, linea);
+        cout << linea << endl;
+        for(int j = 0; j < 9; j++){
+            getline(f, linea, ',');
+            cout << linea << endl;
+            dataAux.push_back(stof(linea));
+        }
+        getline(f, linea);
+        cout << linea << endl;
+        dataAux.push_back(stof(linea));
+        datosAprendidos.push_back(dataAux);
+        dataAux.clear();
+    }
+    
+    f.close();
 }
