@@ -73,10 +73,9 @@ double sacarVarianza(vector<double> muestra, double media){
 }
 
 void aprenderTodo(){
-    //Se crea el fichero en el que escribir
-    //El formato sera:
-        //objeto
-        //mediaArea,mediaDiametro,varianzaArea,varianzaDiametro
+    //Formato del fichero:
+        //Objeto
+        //mediaArea,varianzaArea,mediaPerimetro,varianzaPerimetro,mediaMomentoInvareante1 ......
     ofstream myfile;
     myfile.open ("objetos");
     //myfile << "Writing this to a file.\n";
