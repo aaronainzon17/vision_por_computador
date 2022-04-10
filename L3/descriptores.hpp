@@ -23,4 +23,4 @@ Mat sacarBlobs(Mat outsu);
 void sacarDescriptores(vector<vector<Point>> contours, Mat figure_bin, RNG rng, vector<Moments>& mu, vector<Point2f>& mc, double areasContornos[],double diametroContornos[]);
 
 
-#endif /* IMAGEN_HPP_ */
+#endif

@@ -2,13 +2,7 @@
 
 void aprender(string nomfich, Moments& mu_x, Point2f& mc_x, double& area_x, double& diametro_x)
 {
-    //Devuelve el mu , mc , area , diametro del objeto del fichero
-    // Reading image
     Mat img = imread(nomfich);
-    //Mat img = imread("../imagenesL3/circulo1.pgm");
-    // Display original image
-    // imshow("original Image", img);
-    // waitKey(0);
 
     // Convert to graycsale
     Mat img_gray;
@@ -16,31 +10,18 @@ void aprender(string nomfich, Moments& mu_x, Point2f& mc_x, double& area_x, doub
     // Blur the image for better edge detection
     Mat img_blur;
     GaussianBlur(img_gray, img_blur, Size(3,3), 0);
-    // imshow("Escala de grises", img_gray);
-    // waitKey(0);
-
     Mat otsu = sacarOtsu(img_blur);
-    // // B 1 -> raya borde 
-    // // B 2 -> Circulo
-    // // B 3 -> Triangulo
-    // // B 4 -> Vagon
-    // // B 5 -> Rueda
     Mat figure_bin  = sacarBlobs(otsu);
-    
-
     //Eliminar los que sean menores que un determinado tamanyo
     vector<vector<Point>> contours;
     findContours(figure_bin, contours, RETR_TREE, CHAIN_APPROX_SIMPLE);
-    
     //Se sacan los momentos de los contornos
-    
     vector<Moments> mu(contours.size() );
     double areasContornos[contours.size()];
     double diametroContornos[contours.size()];
     vector<Point2f> mc( contours.size() );
-
+    //Se obtienen los descriptores de la imagen
     sacarDescriptores(contours, figure_bin, rng ,mu , mc, areasContornos, diametroContornos);
-
 
     for(size_t i = 0; i < contours.size();i++){
         if(areasContornos[i] >= 1000){  //En la imagen aparecen varios blobs pero se elige el mas grande que sera el objeto
@@ -50,11 +31,11 @@ void aprender(string nomfich, Moments& mu_x, Point2f& mc_x, double& area_x, doub
             diametro_x = diametroContornos[i];
         }
     }
-
     //Para ese fichero se han obtenidos los descriptores
 }
 
 double sacarMedia(vector<double> muestra){
+    //Se calcula la media de los valores del vector
     double media=0;
     for(double valor : muestra){
         media += valor;
@@ -63,38 +44,35 @@ double sacarMedia(vector<double> muestra){
 }
 
 double sacarVarianza(vector<double> muestra, double media){
+    //Se calcula la varianza de los valores del vector
     double varianza=0;
     for(double valor : muestra){
         varianza += pow(valor - media,2);
     }
     varianza = varianza/((double)(muestra.size()-1));
+    //Se prueban dintos valores de la media a priori ya que hay pocas muestras con las que sacar la varianza
+    //Se ha decidido que la varianza a priori sea el cuadrado del porcentaje de la media (Se han probado varios valores de porcentaje)
+
     //varianza = varianza/((double)(muestra.size()));
     //varianza = varianza + pow(media*0.01,2)/((double)(muestra.size()));
     //varianza = varianza + pow(media*0.05,2)/((double)(muestra.size()));
     //varianza = varianza + pow(media*0.06,2)/((double)(muestra.size()));
     //varianza = varianza + pow(media*0.07,2)/((double)(muestra.size()));
     //varianza = varianza + pow(media*0.08,2)/((double)(muestra.size()));
-    //varianza = varianza + pow(media*0.1,2)/((double)(muestra.size()));
+    //varianza = varianza + pow(media*0.11,2)/((double)(muestra.size()));
     return varianza;
     
 }
 
 void aprenderTodo(){
-    //Formato del fichero:
-        //Objeto
-        //mediaArea,varianzaArea,mediaPerimetro,varianzaPerimetro,mediaMomentoInvareante1 ......
     ofstream myfile;
     myfile.open ("objetos");
-    //myfile << "Writing this to a file.\n";
-    
-
     //Para cada objeto sacar los descriptores de las fotos y sacar la media
     //Aqui se almacena cada descriptor de cada foto (seran 5) y se saca la media y varianza de cada descriptor
     vector<double> inv1,inv2,inv3;
     vector<double> area;
     vector<double> diametro;
     double mediaArea,mediaDiametro, varianzaArea,varianzaDiametro,mediaInv1,mediaInv2,mediaInv3,varianzaInv1,varianzaInv2,varianzaInv3;
-
     vector<string> figuras;
     figuras.push_back("circulo");figuras.push_back("rectangulo");figuras.push_back("rueda");figuras.push_back("triangulo");figuras.push_back("vagon");
     string path = "../imagenesL3/";
@@ -105,9 +83,10 @@ void aprenderTodo(){
     double area_x, diametro_x;
     Point2f mc_x;
     double huMoments[7];
+    ///Para cada figura se obtienen sus descriptores
     for(string s : figuras){
-        //Para cada figura
         myfile << s<<"\n";
+        //De cada uno de los ficheros de entrenamiento se extraen los descriptores del fichero
         for(string f : fichFigura){
             fichero = path + s + f;
             aprender(fichero, momento_x, mc_x, area_x,diametro_x);
@@ -119,7 +98,7 @@ void aprenderTodo(){
             area.push_back(area_x);
             diametro.push_back(diametro_x);
         }
-        //Sacar la media y la varianza de cada 
+        //Una vez obtenidos los descriptores de los ficheros de entrenamiento se obtiene la media y varianza de cada descriptor y se escribe en un fichero 
         mediaArea = sacarMedia(area);
         mediaDiametro = sacarMedia(diametro);
         varianzaArea = sacarVarianza(area,mediaArea);
@@ -137,9 +116,5 @@ void aprenderTodo(){
         area.clear();
         diametro.clear();
     }
-
-
-
-    
     myfile.close();
 }

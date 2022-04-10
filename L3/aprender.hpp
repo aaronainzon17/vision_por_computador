@@ -17,4 +17,4 @@ void aprender(string nomfich, Moments& mu_x, Point2f& mc_x, double& area_x, doub
 
 void aprenderTodo();
 
-#endif /* IMAGEN_HPP_ */
+#endif

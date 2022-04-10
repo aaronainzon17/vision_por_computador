@@ -26,7 +26,5 @@ void reconocer(string nomfich);
 
 void leerDatosAprendizaje(string nomfich,vector<vector<float>> &datosAprendidos);
 
-double mahalanobis(Moments momento, double area, double diametro,vector<vector<float>> datosAprendidos,  vector<vector<Point>>& contornoClases);
 
-
-#endif /* RECONOCER_HPP_ */
+#endif 
