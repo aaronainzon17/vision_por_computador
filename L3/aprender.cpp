@@ -67,7 +67,11 @@ double sacarVarianza(vector<double> muestra, double media){
     for(double valor : muestra){
         varianza += pow(valor - media,2);
     }
+    //varianza = varianza/((double)(muestra.size()-1));
     return varianza/((double)(muestra.size()-1));
+    // double N = muestra.size();
+    // varianza = (varianza/N) + ((N-1)/N)*varianza;
+    // return varianza;
 }
 
 void aprenderTodo(){

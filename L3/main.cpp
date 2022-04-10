@@ -79,14 +79,14 @@ int main(int, char**) {
 
    aprenderTodo();
 
-   vector<vector<float>> datosAprendidos;
-   leerDatosAprendizaje("objetos", datosAprendidos);
-   //for (int i = 0; i < 5; i++){
-   //   for(int j = 0; j < 10; j++){
-   //      cout << datosAprendidos[i][j] << ",";
-   //   }
-   //   cout << endl;
-   //}
+   //vector<vector<float>> datosAprendidos;
+   //leerDatosAprendizaje("objetos", datosAprendidos);
+
+
+   reconocer("../imagenesL3/reco1.pgm");
+   reconocer("../imagenesL3/reco2.pgm");
+   reconocer("../imagenesL3/reco3.pgm");
+
    //return 0;
 }
 

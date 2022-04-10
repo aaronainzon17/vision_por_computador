@@ -5,6 +5,7 @@
 #include "opencv2/imgcodecs.hpp"
 #include "opencv2/highgui.hpp"
 #include "descriptores.hpp"
+#include "aprender.hpp"
 
 #include <iostream>
 #include <fstream>
@@ -13,7 +14,7 @@
 
 using namespace std;
 using namespace cv;
-
+	
 
 enum Objeto {TRIANGULO, RUEDA, CIRCULO, VAGON, RECTANGULO, };
 
@@ -24,6 +25,8 @@ const double areaMin = 1000;    //Indicar en la memoria que este valor se usa pa
 void reconocer(string nomfich);
 
 void leerDatosAprendizaje(string nomfich,vector<vector<float>> &datosAprendidos);
+
+double mahalanobis(Moments momento, double area, double diametro,vector<vector<float>> datosAprendidos,  vector<vector<Point>>& contornoClases);
 
 
 #endif /* RECONOCER_HPP_ */

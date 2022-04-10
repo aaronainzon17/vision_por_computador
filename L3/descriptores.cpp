@@ -2,6 +2,7 @@
 
 Mat sacarOtsu(Mat img_blur){
     Mat otsu;
+    //threshold(img_blur,otsu,0,255,  THRESH_OTSU);
     threshold(img_blur,otsu,0,255, THRESH_BINARY_INV | THRESH_OTSU);
     // imshow("Otsu img", otsu);
     // waitKey(0);
@@ -72,6 +73,9 @@ void sacarDescriptores(vector<vector<Point>> contours, Mat figure_bin,RNG rng, v
         Scalar color = Scalar( rng.uniform(0, 256), rng.uniform(0,256), rng.uniform(0,256) );
         drawContours( drawing, contours, (int)i, color, 2 );
         circle( drawing, mc[i], 4, color, -1 );
+        // imshow( "Contours", drawing );
+        // waitKey(0);
+        
     }
     // imshow( "Contours", drawing );
     // waitKey(0);
