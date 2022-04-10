@@ -22,16 +22,7 @@ Mat sacarBlobs(Mat otsu){
     //waitKey(0);
 
     Mat figure_bin(img_components.size(), CV_8UC1);
-    // B 1 -> raya borde 
-    // B 2 -> Circulo
-    // B 3 -> Triangulo
-    // B 4 -> Vagon
-    // B 5 -> Rueda
     
-    //Nos quedamos con el contorno mas grande
-    //El de mayor area y perimetro
-    // cout << "filas " << img_components.rows << " columnas " << img_components.cols << endl; 
-    // waitKey(0);
 
     //Para mostrar los blobs. Habra que ajustar el tamanyo del blob
     for (int i = 0; i < img_components.rows; i++){
